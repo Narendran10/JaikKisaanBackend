@@ -58,9 +58,11 @@ def extract_last_text_response(response):
             print("Error parsing event:", e)
     return "No text response from agent."
 
-
 @app.route('/api/ask-agent', methods=['POST', 'OPTIONS'])
 def ask_agent():
+    if request.method == 'OPTIONS':
+        return '', 204  # Or you can set Access-Control headers if needed
+
     data = request.get_json()
     user_input = data.get('message')
     user_id = "frontend-user"
