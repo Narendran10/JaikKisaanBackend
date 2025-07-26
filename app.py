@@ -22,25 +22,12 @@ load_dotenv()
 import os
 import base64
 
-def setup_google_credentials():
-    """
-    Decodes base64 GCP credentials and sets GOOGLE_APPLICATION_CREDENTIALS.
-    Works in Render or any other cloud env.
-    """
-    if os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
-        return  # Already set manually or by gcloud
-
-    encoded = os.getenv("GOOGLE_CREDENTIALS_BASE64")
-    if encoded:
-        key_path = "gcloud_key.json"
-        with open(key_path, "wb") as f:
-            f.write(base64.b64decode(encoded))
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = key_path
-
-# Call this early
-setup_google_credentials()
-
-
+# BOOTSTRAP GOOGLE CREDENTIALS FOR RENDER
+if 'GOOGLE_APPLICATION_CREDENTIALS_JSON' in os.environ:
+    key_path = '/tmp/gcp_key.json'
+    with open(key_path, 'w') as f:
+        f.write(os.environ['GOOGLE_APPLICATION_CREDENTIALS_JSON'])
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = key_path
 
 PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", "agentic-ai-day-466410")
 LOCATION = os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1")
@@ -53,8 +40,12 @@ vertexai.init(
     staging_bucket=STAGING_BUCKET,
 )
 
+# app = Flask(__name__)
+# CORS(app, origins=["http://localhost:3000"])
+
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000"])
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+
 
 def extract_last_text_response(response):
     for event in reversed(response):
@@ -68,7 +59,7 @@ def extract_last_text_response(response):
     return "No text response from agent."
 
 
-@app.route('/api/ask-agent', methods=['POST'])
+@app.route('/api/ask-agent', methods=['POST', 'OPTIONS'])
 def ask_agent():
     data = request.get_json()
     user_input = data.get('message')
