@@ -1,6 +1,14 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
+
+# BOOTSTRAP GOOGLE CREDENTIALS FOR RENDER
+if 'GOOGLE_APPLICATION_CREDENTIALS_JSON' in os.environ:
+    key_path = '/tmp/gcp_key.json'
+    with open(key_path, 'w') as f:
+        f.write(os.environ['GOOGLE_APPLICATION_CREDENTIALS_JSON'])
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = key_path
+
 import vertexai
 from dotenv import load_dotenv
 import base64
@@ -19,15 +27,7 @@ from actions import (
 # Load env variables from .env file
 load_dotenv()
 
-import os
-import base64
 
-# BOOTSTRAP GOOGLE CREDENTIALS FOR RENDER
-if 'GOOGLE_APPLICATION_CREDENTIALS_JSON' in os.environ:
-    key_path = '/tmp/gcp_key.json'
-    with open(key_path, 'w') as f:
-        f.write(os.environ['GOOGLE_APPLICATION_CREDENTIALS_JSON'])
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = key_path
 
 PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", "agentic-ai-day-466410")
 LOCATION = os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1")
