@@ -31,7 +31,7 @@ vertexai.init(
 )
 
 app = Flask(__name__)
-CORS(app)  # Allow requests from your React frontend
+CORS(app, origins=["http://localhost:3000"])
 
 def extract_last_text_response(response):
     for event in reversed(response):
