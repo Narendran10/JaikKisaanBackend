@@ -19,6 +19,29 @@ from actions import (
 # Load env variables from .env file
 load_dotenv()
 
+import os
+import base64
+
+def setup_google_credentials():
+    """
+    Decodes base64 GCP credentials and sets GOOGLE_APPLICATION_CREDENTIALS.
+    Works in Render or any other cloud env.
+    """
+    if os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
+        return  # Already set manually or by gcloud
+
+    encoded = os.getenv("GOOGLE_CREDENTIALS_BASE64")
+    if encoded:
+        key_path = "gcloud_key.json"
+        with open(key_path, "wb") as f:
+            f.write(base64.b64decode(encoded))
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = key_path
+
+# Call this early
+setup_google_credentials()
+
+
+
 PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", "agentic-ai-day-466410")
 LOCATION = os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1")
 STAGING_BUCKET = os.environ.get("GOOGLE_CLOUD_STAGING_BUCKET", "gs://jaikisaan")
